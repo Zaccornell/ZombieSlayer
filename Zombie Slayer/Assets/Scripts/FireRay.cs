@@ -116,5 +116,4 @@ public class FireRay : MonoBehaviour {
         Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * distanceOfRay);
     }
 
-
 }
