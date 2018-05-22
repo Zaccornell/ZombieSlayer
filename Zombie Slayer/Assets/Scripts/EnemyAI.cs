@@ -8,6 +8,7 @@ public class EnemyAI : MonoBehaviour {
     private NavMeshAgent myAgent;
     public Transform target;
 
+    public float health = 100;
     // Use this for initialization
     void Start() {
         myAgent = this.GetComponent<NavMeshAgent>();
@@ -33,9 +34,20 @@ public class EnemyAI : MonoBehaviour {
 
      
     // Update is called once per frame
-    void Update() {
+    void Update()
+    {
 
         myAgent.SetDestination(target.position);
+    }
+
+    public void TakeDamage(float damage)
+    {
+        health = health - damage;
+
+        if (health <= 0)
+        {
+            Destroy(this.gameObject);
+        }
     }
 
 }

@@ -9,13 +9,18 @@ public class FireRay : MonoBehaviour {
 
     public int ammoCount = 100;
     public int clipSize = 15;
-    public int clipCount = 5;
+    public int clipCount = 15;
 
     public Text ammoText;
     public Text clipText;
 
     public float timeBetweenBullets = 0.2f;
     private bool canShoot = true;
+
+    public GameObject player;
+    public float timeBetweenAttacks = 0.2f;
+    public GameObject bulletPrefab;
+    public float bulletSpeed = 5f;
 
 
     void Start()
@@ -50,7 +55,7 @@ public class FireRay : MonoBehaviour {
         }
         UpdateText();
     }
-
+ 
     // Use this for initialization
     void Update()
     {
@@ -65,11 +70,28 @@ public class FireRay : MonoBehaviour {
         if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, distanceOfRay))
         {
             //Debug.Log(hit.transform.name);
+        }
 
             if (Input.GetKeyDown(KeyCode.R))
             {
                 Reload();
             }
+        if (Input.GetMouseButton(0))
+        {
+            if (hit.transform.tag == "Enemy")
+            {
+                GameObject GO = Instantiate(bulletPrefab, transform.position,
+            Quaternion.identity) as GameObject;
+                GO.GetComponent<Rigidbody>().AddForce(GO.transform.right * 1000);
+
+
+                Destroy(GO, 3f); canShoot = false;
+                Invoke("ResetShooting", timeBetweenAttacks);
+
+            }
+
+
+            Debug.Log(hit.point);
         }
         //When mouse is clicked
         if (Input.GetMouseButton(0))
@@ -91,29 +113,12 @@ public class FireRay : MonoBehaviour {
             UpdateText();
 
             raycastMarker.transform.position = hit.point;
-            raycastMarker.GetComponentInChildren<ParticleSystem>().Play();
+            //raycastMarker.GetComponentInChildren<ParticleSystem>().Play()
 
-            Debug.Log(hit.point);
-
-            //Pushes object up.
-            //hit.transform.position = hit.transform.position + Vector3.up;
-
-            //Shrinks object. (scale object)
-            //hit.transform.localScale = hit.transform.localScale * 0.9f;
-
-            // deactivates the object (makes it dissapear)
-            // hit.transform.gameObject.SetActive(false);
-
-            // Destroys the object.
-            //Destroy(hit.transform.gameObject);
-
-            //Change colour of the object
-            // hit.transform.gameObject.GetComponent<Renderer>().material.color =
-            // new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
         }
 
         //Draw a ray in the editor
         Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * distanceOfRay);
+        
     }
-
 }
