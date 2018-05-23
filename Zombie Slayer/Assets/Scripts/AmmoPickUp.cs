@@ -7,12 +7,14 @@ public class AmmoPickUp : MonoBehaviour {
 
     public GameObject objectToDeactivate;
     public float interactDelay = 0;
+    public int ammo = 50;
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
         {
-            Invoke("DeactivateObject", interactDelay);
+            Camera.main.GetComponent<FireRay>().AddAmmo(ammo);
+            DeactivateObject();
         }
             
     }

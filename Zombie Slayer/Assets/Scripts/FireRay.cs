@@ -8,6 +8,8 @@ public class FireRay : MonoBehaviour {
     public GameObject raycastMarker = null;
 
     public int ammoCount = 100;
+
+
     public int clipSize = 15;
     public int clipCount = 15;
 
@@ -76,49 +78,55 @@ public class FireRay : MonoBehaviour {
             {
                 Reload();
             }
+        //When left mouse is clicked
         if (Input.GetMouseButton(0))
         {
-            if (hit.transform.tag == "Enemy")
-            {
-                GameObject GO = Instantiate(bulletPrefab, transform.position,
-            Quaternion.identity) as GameObject;
-                GO.GetComponent<Rigidbody>().AddForce(GO.transform.right * 1000);
-
-
-                Destroy(GO, 3f); canShoot = false;
-                Invoke("ResetShooting", timeBetweenAttacks);
-
-            }
-
-
-            Debug.Log(hit.point);
-        }
-        //When mouse is clicked
-        if (Input.GetMouseButton(0))
-        {
+            //If clip is empty dont fire
             if (clipCount <= 0)
             {
                 return;
             }
 
+
             if (canShoot == false)
             {
+
                 return;
             }
 
-            canShoot = false;
-            Invoke("ResetShooting", timeBetweenBullets);
 
             clipCount--;
             UpdateText();
 
+            canShoot = false;
+            Invoke("ResetShooting", timeBetweenBullets);
+
+            GameObject GO = Instantiate(bulletPrefab, transform.position,
+            Camera.main.transform.rotation) as GameObject;
+            GO.GetComponent<Rigidbody>().AddForce(GO.transform.forward * 3000);
+
+
+            Destroy(GO, 3f); canShoot = false;
+            Invoke("ResetShooting", timeBetweenAttacks);
+
             raycastMarker.transform.position = hit.point;
+
             //raycastMarker.GetComponentInChildren<ParticleSystem>().Play()
+
+            //Draw a ray in the editor
+            Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * distanceOfRay);
 
         }
 
-        //Draw a ray in the editor
-        Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * distanceOfRay);
-        
+
     }
+
+    public void AddAmmo(int number)
+    {
+        ammoCount += number;
+        UpdateText();
+
+    }
+       
 }
+
