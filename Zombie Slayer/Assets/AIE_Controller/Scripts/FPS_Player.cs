@@ -10,6 +10,7 @@ using XboxCtrlrInput;
 [RequireComponent(typeof(FPS_PhysicsUse))]
 public class FPS_Player : MonoBehaviour
 {
+    public bool isGameEnded;
     #region Unity Public References
     /// <summary>
     /// The character controller that this script is attached to
@@ -517,28 +518,34 @@ public class FPS_Player : MonoBehaviour
     /// </summary>
     private void Look(float a_fDeltaTime)
     {
-        // Rotation around Y ( Up )
-        float yRot = m_AxisLookX.AxisValue * a_fDeltaTime * m_LookSensitivity;
-        // Turn Left / Right
-        transform.Rotate(Vector3.up, yRot, Space.Self);
-
-        // Rotation around Local X ( Left/Right )
-        float xRot = m_AxisLookY.AxisValue * a_fDeltaTime * m_LookSensitivity;
-        // Look Up / Down
-        m_POVCamera.transform.Rotate(transform.right, -xRot, Space.World);
-
-        // If camera is upside down
-        if (Vector3.Dot(m_POVCamera.transform.up, Vector3.up) < 0.0f)
+        if (isGameEnded == false)
         {
-            // Looking up - Rolling Backwards
-            if (xRot > 0)
+
+
+            // Rotation around Y ( Up )
+            float yRot = m_AxisLookX.AxisValue * a_fDeltaTime * m_LookSensitivity;
+            // Turn Left / Right
+            transform.Rotate(Vector3.up, yRot, Space.Self);
+
+            // Rotation around Local X ( Left/Right )
+            float xRot = m_AxisLookY.AxisValue * a_fDeltaTime * m_LookSensitivity;
+            // Look Up / Down
+            m_POVCamera.transform.Rotate(transform.right, -xRot, Space.World);
+
+            // If camera is upside down
+            if (Vector3.Dot(m_POVCamera.transform.up, Vector3.up) < 0.0f)
             {
-                m_POVCamera.transform.localEulerAngles = Vector3.right * -90.0f;
-            }
-            // Looking down - Tumbling Forwards
-            else if (xRot < 0)
-            {
-                m_POVCamera.transform.localEulerAngles = Vector3.right * 90.0f;
+                // Looking up - Rolling Backwards
+                if (xRot > 0)
+                {
+                    m_POVCamera.transform.localEulerAngles = Vector3.right * -90.0f;
+                }
+                // Looking down - Tumbling Forwards
+                else if (xRot < 0)
+                {
+                    m_POVCamera.transform.localEulerAngles = Vector3.right * 90.0f;
+                }
+
             }
         }
     }
@@ -612,172 +619,177 @@ public class FPS_Player : MonoBehaviour
     /// <param name="a_fDeltaTime"></param>
     private void Move(float a_fDeltaTime)
     {
-        // Get axes w/ weights
-        m_v3Motion = new Vector3(m_AxisMoveX.AxisValue, 0, m_AxisMoveZ.AxisValue);
-        // Ignore them if we are manipulating an object
-        if (m_bPhysManipulation)
+        if (isGameEnded == false)
         {
-            m_v3Motion = Vector3.zero;
-        }
-        
-        // Normalise the vector if it is > 1
-        if (m_v3Motion.sqrMagnitude > 1)
-        {
-            m_v3Motion.Normalize();
-        }
 
-        // Scale by speed - Component wise, post input scaling
-        // Forwards
-        m_v3Motion.z *= m_fCurrentSpeed;
-        // Backwards
-        if (m_v3Motion.z < 0)
-        {
-            m_v3Motion.z *= m_fReverseRatio;
-        }
-        // Strafe
-        m_v3Motion.x *= m_fCurrentSpeed * m_fStrafeRatio;
 
-        // Transform the vector into relative motion
-        m_v3Motion = transform.TransformDirection(m_v3Motion);
-        // Reduce input by ratio if airborne
-        if (m_eJump != Jump.Grounded)
-        {
-            m_v3Motion *= m_fAirborneRatio;
-        }
-			
-        // If jump pressed and jump hitbox is clear, jump.
-		if ((m_BtnJump.CurrentState == ControllerButtonState.Down) && (m_eJump == Jump.Grounded) && m_canJump)
-        {
-            // Head butt things
-            if (m_HeightJump.Colliding)
+            // Get axes w/ weights
+            m_v3Motion = new Vector3(m_AxisMoveX.AxisValue, 0, m_AxisMoveZ.AxisValue);
+            // Ignore them if we are manipulating an object
+            if (m_bPhysManipulation)
             {
-                m_HeightJump.ForceOut(ForceMode.Impulse);
+                m_v3Motion = Vector3.zero;
             }
-            else // Jump with conditions
+
+            // Normalise the vector if it is > 1
+            if (m_v3Motion.sqrMagnitude > 1)
             {
-                // Set jump speed if on a slope less that slope limit
-                t_Vector3 = m_Anchor.transform.position - (transform.position + Vector3.up * (m_CharacterController.radius - m_CharacterController.skinWidth));
+                m_v3Motion.Normalize();
+            }
 
-                // If collision tangent is < slope, we can jump
-                m_fAnchorDot = Vector3.Dot(t_Vector3.normalized, -Vector3.up);
-                if (m_fAnchorDot > Mathf.Cos(m_CharacterController.slopeLimit * RADIANS_TO_DEGREES))
+            // Scale by speed - Component wise, post input scaling
+            // Forwards
+            m_v3Motion.z *= m_fCurrentSpeed;
+            // Backwards
+            if (m_v3Motion.z < 0)
+            {
+                m_v3Motion.z *= m_fReverseRatio;
+            }
+            // Strafe
+            m_v3Motion.x *= m_fCurrentSpeed * m_fStrafeRatio;
+
+            // Transform the vector into relative motion
+            m_v3Motion = transform.TransformDirection(m_v3Motion);
+            // Reduce input by ratio if airborne
+            if (m_eJump != Jump.Grounded)
+            {
+                m_v3Motion *= m_fAirborneRatio;
+            }
+
+            // If jump pressed and jump hitbox is clear, jump.
+            if ((m_BtnJump.CurrentState == ControllerButtonState.Down) && (m_eJump == Jump.Grounded) && m_canJump)
+            {
+                // Head butt things
+                if (m_HeightJump.Colliding)
                 {
-                    // Add jump speed to Y
-                    m_fYVelocity = m_fJumpSpeed;
+                    m_HeightJump.ForceOut(ForceMode.Impulse);
+                }
+                else // Jump with conditions
+                {
+                    // Set jump speed if on a slope less that slope limit
+                    t_Vector3 = m_Anchor.transform.position - (transform.position + Vector3.up * (m_CharacterController.radius - m_CharacterController.skinWidth));
 
-                    // Update state
-                    m_eJump = Jump.Jumping;
-                    // Scale jump if crouching...
-                    if (m_ePose == Pose.Crouch)
+                    // If collision tangent is < slope, we can jump
+                    m_fAnchorDot = Vector3.Dot(t_Vector3.normalized, -Vector3.up);
+                    if (m_fAnchorDot > Mathf.Cos(m_CharacterController.slopeLimit * RADIANS_TO_DEGREES))
                     {
-                        m_fYVelocity *= m_fCrouchJumpRatio;
+                        // Add jump speed to Y
+                        m_fYVelocity = m_fJumpSpeed;
+
+                        // Update state
+                        m_eJump = Jump.Jumping;
+                        // Scale jump if crouching...
+                        if (m_ePose == Pose.Crouch)
+                        {
+                            m_fYVelocity *= m_fCrouchJumpRatio;
+                        }
+                        // .. or prone.
+                        if (m_ePose == Pose.Prone)
+                        {
+                            m_fYVelocity *= m_fProneJumpRatio;
+                        }
+                        // Store the X/Z of projectile motion
+                        m_v3LaunchVelocity = m_CharacterController.velocity;
+                        m_v3LaunchVelocity.y = 0.0f;
                     }
-                    // .. or prone.
-                    if (m_ePose == Pose.Prone)
-                    {
-                        m_fYVelocity *= m_fProneJumpRatio;
-                    }
-                    // Store the X/Z of projectile motion
-                    m_v3LaunchVelocity = m_CharacterController.velocity;
-                    m_v3LaunchVelocity.y = 0.0f;
                 }
             }
-        }
-        // else apply gravity
-        else if (m_eJump != Jump.Grounded)
-        {
-            // Apply gravity
-            m_fYVelocity = m_fYVelocity + m_fGravity * a_fDeltaTime;
+            // else apply gravity
+            else if (m_eJump != Jump.Grounded)
+            {
+                // Apply gravity
+                m_fYVelocity = m_fYVelocity + m_fGravity * a_fDeltaTime;
 
-            // Roof hit check
-            if (m_fYVelocity > 0 && m_HeightJump.Colliding)
-            {
-                m_fYVelocity = 0;
-                m_eJump = Jump.InAir;
-                m_HeightJump.ForceOut(ForceMode.Impulse);
-            }
-            // Check y speed and jump state to transition to in-air
-            if (m_eJump == Jump.Jumping)
-            {
-                // Toggle from jump to falling
-                if (m_fYVelocity <= 0)
+                // Roof hit check
+                if (m_fYVelocity > 0 && m_HeightJump.Colliding)
                 {
+                    m_fYVelocity = 0;
                     m_eJump = Jump.InAir;
+                    m_HeightJump.ForceOut(ForceMode.Impulse);
                 }
-            }
-        }
-        else // Grounded
-        {
-            t_Vector3 = m_Anchor.transform.position - (transform.position + Vector3.up * (m_CharacterController.radius - m_CharacterController.skinWidth));
-            // If collision tangent is < slope, we can 'stick' by wiping off velocity
-            m_fAnchorDot = Vector3.Dot(t_Vector3.normalized, -Vector3.up);
-
-            m_fAnchorDot = Mathf.Clamp(m_fAnchorDot, 0.0f, 1.0f);
-
-            if (!(m_fAnchorDot > Mathf.Cos(m_CharacterController.slopeLimit * RADIANS_TO_DEGREES)))
-            {
-                // Becomes velocity down the slope
-                m_fYVelocity = m_fYVelocity + m_fGravity * a_fDeltaTime * (1 - m_fAnchorDot);
-
-                // Z/X Motion 
-                //t_Vector3 = m_Anchor.transform.position - transform.position;
-                t_Vector3.y = 0;
-                t_Vector3.Normalize();
-                t_Vector3 *= m_fYVelocity * (m_fAnchorDot);
-
-                // Wipe out motion into the surface...
-                m_v3Motion -=
-                    (m_Anchor.transform.position - transform.position).normalized *
-                    Vector3.Dot((m_Anchor.transform.position - transform.position).normalized, m_v3Motion.normalized) *
-                    m_v3Motion.magnitude;
-        
-                // Apply Reacrtion force
-                m_v3Motion += t_Vector3;
-               // Debug.Log(t_Vector3.ToString());
-            }
-            else // we walk around on a shallow. no slope
-            {
-                // Direction to the plane highside
-                t_Vector3 = m_Anchor.transform.position - transform.position;
-                t_Vector3.y = 0;
-                t_Vector3.Normalize();
-
-                float fMotionDot = Vector3.Dot(m_v3Motion.normalized, t_Vector3);
-                // Rotate by 90 around Y
-                float t = t_Vector3.x;
-                t_Vector3.x = -t_Vector3.z;
-                t_Vector3.z = t;
-
-                // Rotate motion around t_Vector3 by acos(m_fAnchorDot), slightly into the surface
-                if (fMotionDot < 0)
+                // Check y speed and jump state to transition to in-air
+                if (m_eJump == Jump.Jumping)
                 {
-                    m_v3Motion = Quaternion.AngleAxis(Mathf.Acos(m_fAnchorDot) / RADIANS_TO_DEGREES + ROTATION_PADDING, t_Vector3) * m_v3Motion;
+                    // Toggle from jump to falling
+                    if (m_fYVelocity <= 0)
+                    {
+                        m_eJump = Jump.InAir;
+                    }
                 }
-                else
-                {
-                    m_v3Motion = Quaternion.AngleAxis(Mathf.Acos(m_fAnchorDot) / RADIANS_TO_DEGREES - ROTATION_PADDING, t_Vector3) * m_v3Motion;
-                }
-
-                m_fYVelocity = m_v3Motion.y;
             }
-        }
-
-        // Assign from velocity
-        m_v3Motion.y = m_fYVelocity;
-
-        // If theres any motion, disable the anchor till next frame.
-        if (m_v3Motion.magnitude > float.Epsilon)
-        {
-            if (m_Anchor.gameObject.activeInHierarchy)
+            else // Grounded
             {
-                m_Anchor.parent = transform;
-                m_Anchor.localPosition = Vector3.zero;
-                m_Anchor.gameObject.SetActive(false);
-            }
-        }
+                t_Vector3 = m_Anchor.transform.position - (transform.position + Vector3.up * (m_CharacterController.radius - m_CharacterController.skinWidth));
+                // If collision tangent is < slope, we can 'stick' by wiping off velocity
+                m_fAnchorDot = Vector3.Dot(t_Vector3.normalized, -Vector3.up);
 
-        // Apply Motion
-        m_CharacterController.Move(m_v3Motion * a_fDeltaTime);
+                m_fAnchorDot = Mathf.Clamp(m_fAnchorDot, 0.0f, 1.0f);
+
+                if (!(m_fAnchorDot > Mathf.Cos(m_CharacterController.slopeLimit * RADIANS_TO_DEGREES)))
+                {
+                    // Becomes velocity down the slope
+                    m_fYVelocity = m_fYVelocity + m_fGravity * a_fDeltaTime * (1 - m_fAnchorDot);
+
+                    // Z/X Motion 
+                    //t_Vector3 = m_Anchor.transform.position - transform.position;
+                    t_Vector3.y = 0;
+                    t_Vector3.Normalize();
+                    t_Vector3 *= m_fYVelocity * (m_fAnchorDot);
+
+                    // Wipe out motion into the surface...
+                    m_v3Motion -=
+                        (m_Anchor.transform.position - transform.position).normalized *
+                        Vector3.Dot((m_Anchor.transform.position - transform.position).normalized, m_v3Motion.normalized) *
+                        m_v3Motion.magnitude;
+
+                    // Apply Reacrtion force
+                    m_v3Motion += t_Vector3;
+                    // Debug.Log(t_Vector3.ToString());
+                }
+                else // we walk around on a shallow. no slope
+                {
+                    // Direction to the plane highside
+                    t_Vector3 = m_Anchor.transform.position - transform.position;
+                    t_Vector3.y = 0;
+                    t_Vector3.Normalize();
+
+                    float fMotionDot = Vector3.Dot(m_v3Motion.normalized, t_Vector3);
+                    // Rotate by 90 around Y
+                    float t = t_Vector3.x;
+                    t_Vector3.x = -t_Vector3.z;
+                    t_Vector3.z = t;
+
+                    // Rotate motion around t_Vector3 by acos(m_fAnchorDot), slightly into the surface
+                    if (fMotionDot < 0)
+                    {
+                        m_v3Motion = Quaternion.AngleAxis(Mathf.Acos(m_fAnchorDot) / RADIANS_TO_DEGREES + ROTATION_PADDING, t_Vector3) * m_v3Motion;
+                    }
+                    else
+                    {
+                        m_v3Motion = Quaternion.AngleAxis(Mathf.Acos(m_fAnchorDot) / RADIANS_TO_DEGREES - ROTATION_PADDING, t_Vector3) * m_v3Motion;
+                    }
+
+                    m_fYVelocity = m_v3Motion.y;
+                }
+            }
+
+            // Assign from velocity
+            m_v3Motion.y = m_fYVelocity;
+
+            // If theres any motion, disable the anchor till next frame.
+            if (m_v3Motion.magnitude > float.Epsilon)
+            {
+                if (m_Anchor.gameObject.activeInHierarchy)
+                {
+                    m_Anchor.parent = transform;
+                    m_Anchor.localPosition = Vector3.zero;
+                    m_Anchor.gameObject.SetActive(false);
+                }
+            }
+
+            // Apply Motion
+            m_CharacterController.Move(m_v3Motion * a_fDeltaTime);
+        }
     }
 
     /// <summary>
@@ -821,6 +833,11 @@ public class FPS_Player : MonoBehaviour
 //            m_bPhysManipulation = false;
 //        }
 //    }
+//This gets called when the player is dead
+public void EndGame()
+    {
+        isGameEnded = true;
+    }
 
     #region Character Controller Height Lerping
     /// <summary>

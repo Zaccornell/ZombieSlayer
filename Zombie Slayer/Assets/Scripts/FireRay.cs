@@ -7,12 +7,16 @@ public class FireRay : MonoBehaviour {
 
     public GameObject raycastMarker = null;
 
+    //How much ammo is in the ammoCount without collecting any ammo pick ups
     public int ammoCount = 100;
 
-
+    //How many bullets you can shoot after reloading
     public int clipSize = 15;
+
+    //How many bullets the player can shoot before reloading
     public int clipCount = 15;
 
+    
     public Text ammoText;
     public Text clipText;
 
@@ -23,6 +27,8 @@ public class FireRay : MonoBehaviour {
     public float timeBetweenAttacks = 0.2f;
     public GameObject bulletPrefab;
     public float bulletSpeed = 5f;
+
+    private bool isGameEnded;
 
 
     void Start()
@@ -94,7 +100,10 @@ public class FireRay : MonoBehaviour {
                 return;
             }
 
-
+            if(isGameEnded == true)
+            {
+                return;
+            }
             clipCount--;
             UpdateText();
 
@@ -127,6 +136,9 @@ public class FireRay : MonoBehaviour {
         UpdateText();
 
     }
-       
+    public void EndGame()
+    {
+        isGameEnded = true;
+    }
 }
 
