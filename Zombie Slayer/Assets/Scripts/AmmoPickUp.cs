@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(TriggerDisplay))]
+
+//Name of the script and monobehaviour is where the script can get its information from
 public class AmmoPickUp : MonoBehaviour {
 
     //Reference to the gameobject
@@ -26,14 +28,27 @@ public class AmmoPickUp : MonoBehaviour {
         //Tagging the other as player
         if (other.tag == "Player")
         {
+            //Add ammo to camera
             Camera.main.GetComponent<FireRay>().AddAmmo(ammo);
+
+            //If aboce is true deactivate object
             DeactivateObject();
         }
             
     }
 
+    //-------------------------------------------------------------------------
+    //DeactivateObject()
+    //Called when the object tagged "Player" enters the object collider
+    //
+    //Param:
+    //
+    //Return:
+    //      Void
+    //-------------------------------------------------------------------------
 private void DeactivateObject()
     {
+        //When the function is running set this to false
         objectToDeactivate.SetActive(false);
     }
 }

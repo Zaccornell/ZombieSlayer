@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Name of the script and monobehaviour is where the script can get its information from
 public class Bullet : MonoBehaviour {
 
     //This is how much damage the bullet does

@@ -8,8 +8,10 @@ using XboxCtrlrInput;
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(FPS_PhysicsUse))]
+//Name of the script and monobehaviour is where the script can get its information from
 public class FPS_Player : MonoBehaviour
 {
+    //Making a variable called isGameEnded
     public bool isGameEnded;
     #region Unity Public References
     /// <summary>
@@ -518,6 +520,7 @@ public class FPS_Player : MonoBehaviour
     /// </summary>
     private void Look(float a_fDeltaTime)
     {
+        //If isGameEnded equals false then run whats underneath it
         if (isGameEnded == false)
         {
 
@@ -834,8 +837,19 @@ public class FPS_Player : MonoBehaviour
 //        }
 //    }
 //This gets called when the player is dead
+
+        //--------------------------------
+        //EndGame()
+        //Called when then player dies
+        //
+        //Param:
+        //     
+        //Return:
+        //      Void
+        //--------------------------------
 public void EndGame()
     {
+        //When function is running then make isGameEnded equal to true
         isGameEnded = true;
     }
 
